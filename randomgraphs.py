@@ -63,7 +63,6 @@ class TBRW(RandomTree):
         self.n = 0
     
     def update(self):
-
         print(f"Simulating n={self.n}", end="\r")
 
         # sample leaf count
@@ -89,5 +88,18 @@ class BA(RandomTree):
     def __init__(self, T0: nx.Graph = nx.path_graph(2)):
         self.T = T0
         self.n = 0
+
+    def update(self):
+        print(f"Simulating n={self.n}", end="\r")
+
+        # sample random vertex
+        degrees = np.array([self.T.degree(v) for v in list(self.T.nodes)])
+        degrees /= np.sum(degrees) # normalize
+        v = rv_discrete(values=(np.arange(len(degrees)), degrees)).rvs(size=1)[0] # sample random vertex proportional to degree
+
+        # attach leaf
+        new_node = new_node = self.T.number_of_nodes()
+        self.T.add_node(new_node)
+        self.T.add_edge(v, new_node)
 
     
