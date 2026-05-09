@@ -3,9 +3,46 @@ from random import choice
 import numpy as np
 from scipy.stats import rv_discrete
 from typing import Callable
-import matplotlib.pyplot as plt
 
-class TBRW:
+class RandomTree:
+    T: nx.graph
+    n: int
+
+    def __init__(self, T0: nx.Graph = nx.path_graph(2)):
+        self.T = T0
+        self.n = 0
+    
+    def update(self):
+        pass
+
+    def repeat_update(self, iterations: int):
+        for i in range(iterations):
+            self.update()
+    
+    def update_to(self, end_n: int):
+        self.repeat_update(end_n - self.n)
+        
+    def update_to_size(self, end_size: int):
+        while self.T.number_of_nodes() < end_size:
+            self.update()
+    
+    def draw(self):
+        print("Drawing graph...       ")
+        nx.draw(self.T, node_size=30)
+
+    def draw_planar(self):
+        print("Drawing graph...       ")
+        nx.draw_planar(self.T, node_size=30)
+
+    def draw_fancy(self):
+        print("Drawing graph...       ")
+        nx.draw_kamada_kawai(self.T, node_size=30)
+    
+    def export(self, path="tree.graphml"):
+        print("Exporting graph...       ")
+        nx.write_graphml(self.T, path)
+
+class TBRW(RandomTree):
 
     T: nx.Graph
     X: int
@@ -44,38 +81,13 @@ class TBRW:
 
         self.n += 1      
     
-    def repeat_update(self, iterations: int):
-        for i in range(iterations):
-            self.update()
+
+class BA(RandomTree):
+    T: nx.Graph
+    n: int
+
+    def __init__(self, T0: nx.Graph = nx.path_graph(2)):
+        self.T = T0
+        self.n = 0
+
     
-    def update_to(self, end_n: int):
-        self.repeat_update(end_n - self.n)
-        
-    def update_to_size(self, end_size: int):
-        while self.T.number_of_nodes() < end_size:
-            self.update()
-    
-    def draw(self):
-        print("Drawing graph...       ")
-        nx.draw(self.T, node_size=30)
-
-    def draw_planar(self):
-        print("Drawing graph...       ")
-        nx.draw_planar(self.T, node_size=30)
-
-    def draw_fancy(self):
-        print("Drawing graph...       ")
-        nx.draw_kamada_kawai(self.T, node_size=30)
-    
-    def export(self, path="tree.graphml"):
-        print("Exporting graph...       ")
-        nx.write_graphml(self.T, path)
-
-
-leaf_pmf = lambda n: np.array([.9, .1])
-tbrw = TBRW(leaf_pmf)
-
-tbrw.update_to(5000)
-tbrw.draw_fancy()
-
-plt.show()
