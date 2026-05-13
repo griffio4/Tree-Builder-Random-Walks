@@ -4,6 +4,7 @@ import numpy as np
 from scipy.stats import rv_discrete
 from typing import Callable
 from random import random
+from networkx.drawing.nx_agraph import graphviz_layout
 
 def _sample_discrete(pmf):
     return rv_discrete(values=(np.arange(len(pmf)), pmf)).rvs(size=1)[0]
@@ -43,20 +44,20 @@ class RandomTree:
     # graph drawing
     
     def draw(self):
-        print("Drawing graph...       ")
+        print("Drawing graph...                    ")
         nx.draw(self.T, node_size=30)
 
-    def draw_planar(self):
-        print("Drawing graph...       ")
-        nx.draw_planar(self.T, node_size=30)
-
     def draw_fancy(self):
-        print("Drawing graph...       ")
+        print("Drawing graph...                    ")
         nx.draw_kamada_kawai(self.T, node_size=30)
     
     def export(self, path="tree.graphml"):
-        print("Exporting graph...       ")
+        print("Exporting graph...                  ")
         nx.write_graphml(self.T, path)
+    
+    def get_positions(self):
+        print("Computing vertex positions...       ")
+        return graphviz_layout(self.T, prog="sfdp")
 
     # analysis
 
@@ -73,11 +74,6 @@ class TBRW(RandomTree):
     leaf_pmf: Callable
     
     def __init__(self, leaf_pmf: Callable, T0: nx.Graph = nx.path_graph(2), X0: int = 0):
-        '''
-        leaf_pmf: a function taking an integer n as input and returning a probability distribution (array)
-        T0: the initial tree
-        X0: the initial position of the walker
-        '''
         if X0 not in T0.nodes:
             raise Exception(f"{X0} is not a vertex of the initial tree.")
         self.leaf_pmf = leaf_pmf
@@ -127,7 +123,6 @@ class GammaTBRW(TBRW):
             new_node = self.T.number_of_nodes()
             self.T.add_node(new_node)
             self.T.add_edge(self.X, new_node)
-
 
 class BA(RandomTree):
     T: nx.Graph

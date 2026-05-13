@@ -81,8 +81,8 @@ def plot_growth_times_harmonic():
     plt.ylabel("Time steps")
     plt.legend()
     plt.grid()
-    plt.title(f"Empirical growth times compared to expected growth time, {iterations} simulations")
+    # plt.title(f"Empirical growth times compared to expected growth time, {iterations} simulations")
     plt.show()
 
-plot_growth_times()
+# plot_growth_times()
 plot_growth_times_harmonic()
