@@ -92,6 +92,8 @@ class TBRW(RandomTree):
             self.T.add_edge(self.X, new_node)
     
     def update_walk(self):
+        if self.X == 0 and random() < 1/self.T.degree(0): # self-loop at root
+            return
         self.X = choice(list(self.T.neighbors(self.X)))
     
     def update(self):
