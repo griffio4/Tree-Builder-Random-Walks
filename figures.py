@@ -5,4 +5,5 @@ import mixing_times
 
 growth_times.plot_growth_times()
 growth_times.plot_growth_times_harmonic()
-mixing_times.mixing_time_visualization()
+mixing_times.mixing_visualization()
+mixing_times.stationary_distance_visualization()

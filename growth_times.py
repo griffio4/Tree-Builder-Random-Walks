@@ -12,8 +12,9 @@ def approx_growth_times_2(gamma: int, end: int):
 def approx_growth_times_harmonic(end: int):
     return np.array([np.exp(n) for n in range(1, end+1)])
 
-# simulate only the part of the TBRW that matters for the computation of growth times
+
 def growth_times(max_length: int, gamma: float, log=False):
+    # simulate only the part of the TBRW that matters for the computation of growth times
     n = 0
     times = []
     while True:
@@ -27,11 +28,7 @@ def growth_times(max_length: int, gamma: float, log=False):
                     print("")
                 return times
 
-# Code used for first figure in section "Expected growth times"
-def plot_growth_times():
-
-    max_length = 100
-    iterations = 250
+def plot_growth_times(max_length = 100, iterations = 250):
 
     for i in range(1, 5):
         plt.subplot(2,2,i)
@@ -57,11 +54,7 @@ def plot_growth_times():
     plt.show()
 
 
-# Code used for second figure in section "Expected growth times"
-def plot_growth_times_harmonic():
-
-    max_length = 10
-    iterations = 250
+def plot_growth_times_harmonic(max_length = 10, iterations = 250):
 
     total_times = np.zeros(max_length)
     log_total_times = np.ones(max_length)
@@ -85,4 +78,4 @@ def plot_growth_times_harmonic():
     plt.show()
 
 # plot_growth_times()
-plot_growth_times_harmonic()
+# plot_growth_times_harmonic()

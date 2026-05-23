@@ -41,25 +41,17 @@ class RandomTree:
         if log:
             print("")
 
-    # graph drawing
-    
-    def draw(self):
-        print("Drawing graph...                    ")
-        nx.draw(self.T, node_size=30)
-
-    def draw_fancy(self):
-        print("Drawing graph...                    ")
-        nx.draw_kamada_kawai(self.T, node_size=30)
-    
     def export(self, path="tree.graphml"):
         print("Exporting graph...                  ")
         nx.write_graphml(self.T, path)
+        print("Finished exporting graph.")
     
-    def get_positions(self):
+    def get_positions(self, layout="sfdp"):
         print("Computing vertex positions...       ")
-        return graphviz_layout(self.T, prog="sfdp")
-
-    # analysis
+        pos = graphviz_layout(self.T, prog=layout)
+        print("Finished computing vertex positions.")
+        return pos
+        
 
     def degree_distribution(self):
         degrees = np.array([self.T.degree(v) for v in list(self.T.nodes)])
@@ -80,7 +72,6 @@ class TBRW(RandomTree):
         self.T = T0.copy()
         self.X = X0
         self.n = 0
-        self.T.add_edge(0, 0) # self-loop
     
     def update_tree(self):
         # sample leaf count
@@ -93,13 +84,22 @@ class TBRW(RandomTree):
             self.T.add_edge(self.X, new_node)
     
     def update_walk(self):
+        if self.X == 0 and random() < 1/(self.T.degree(0) + 1): # self-loop
+            return
         self.X = choice(list(self.T.neighbors(self.X)))
     
     def transition_vector(self, x) -> np.array:
-        vec = np.zeros(self.T.number_of_nodes)
+        vec = np.zeros(self.T.number_of_nodes())
         for n in self.T.neighbors(x):
             vec[n] = 1
+        if x == 0: # self-loop
+            vec[0] = 1
+            return vec / (self.T.degree(x) + 1)
         return vec / self.T.degree(x)
+        
+    
+    def transition_matrix(self) -> np.array:
+        return np.array([self.transition_vector(x) for x in range(self.T.number_of_nodes())])
     
     def update(self):
         self.update_tree()
@@ -124,7 +124,7 @@ class GammaTBRW(TBRW):
         self.n = 1
         self.gamma = gamma
     
-    # fast update function
+    # fast tree update function
     def update_tree(self):
         if random() < self.n**(-self.gamma):
             new_node = self.T.number_of_nodes()
