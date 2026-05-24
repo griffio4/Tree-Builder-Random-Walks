@@ -1,13 +1,16 @@
-from randomgraphs import GammaTBRW
+from randomgraphs import TBRW, GammaTBRW
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import networkx as nx
 from matplotlib import cm, colors
+import scipy.sparse as sp
 
 
 def degrees(G: nx.Graph) -> np.array:
-    return np.array([G.degree(v) for v in G.nodes])
+    deg = np.array([G.degree(v) for v in G.nodes])
+    deg[0] += 1 # self-loop
+    return deg
 
 def stationary_distribution(G: nx.Graph) -> np.array:
     return degrees(G) / np.sum(degrees(G))
@@ -16,12 +19,8 @@ def total_variational_distance(d1: np.array, d2: np.array):
     return np.sum(np.abs(d1 - d2)) / 2
 
 
-def mixing_visualization():
-    gamma = 1/2
-    tree_size = 500
-
-    step_counts = [10, 100, 500, 2000]
-
+def mixing_visualization(gamma = 1/2, tree_size = 500, step_counts = [10, 100, 500, 2000]):
+    
     tbrw = GammaTBRW(gamma)
     tbrw.update_to_size(tree_size, True)
     positions = tbrw.get_positions()
@@ -39,10 +38,8 @@ def mixing_visualization():
     plt.subplots_adjust(left=0, bottom=0, right=1, top=.95, wspace=0, hspace=.1)
     plt.show()
 
-def stationary_distance_visualization():
-    gamma = 1/2
-    tree_size = 1000
-    steps = 2000
+
+def stationary_distance_visualization(gamma = 1/2, tree_size = 1000, steps = 2000):
 
     tbrw = GammaTBRW(gamma)
     tbrw.update_to_size(tree_size, True)
@@ -63,6 +60,102 @@ def stationary_distance_visualization():
     plt.subplots_adjust(left=0, bottom=0, right=1, top=.95, wspace=0, hspace=0)
     plt.show()
 
-stationary_distance_visualization()
 
+def mixing_time_plot(gamma = 1/2, tree_size = 100, steps = 2000):
+    max_distances = []
+    tbrw = GammaTBRW(gamma)
+    tbrw.update_to_size(tree_size, True)
+    pi_T = stationary_distribution(tbrw.T)
+    transition_matrix = tbrw.transition_matrix()
+    distributions = np.identity(tree_size)
+
+    for i in range(steps):
+        print(f"Simulating step {i} of the random walk       ", end="\r")
+        distributions @= transition_matrix
+        distances = np.array([total_variational_distance(distributions[i], pi_T) for i in tbrw.T.nodes])
+        max_distances.append(np.max(distances))
     
+    plt.subplot(121)
+    plt.plot(np.arange(steps), max_distances)
+    plt.xlabel("t")
+    plt.ylabel("d(t)")
+    plt.grid()
+
+    plt.subplot(122)
+    plt.semilogy(np.arange(steps), max_distances)
+    plt.xlabel("t")
+    plt.ylabel("d(t)")
+    plt.grid()
+
+    plt.subplots_adjust(hspace=.2)
+    plt.show()
+
+
+def mixing_constants(tbrw: TBRW, steps = 1000, samples = 5):
+
+    alphas = np.zeros(samples)
+    Cs = np.zeros(samples)
+    pi_T = stationary_distribution(tbrw.T)
+    transition_matrix = tbrw.transition_matrix()
+    transition_matrix_power = np.linalg.matrix_power(transition_matrix, steps)
+    distributions = np.identity(tbrw.T.number_of_nodes())
+
+    for i in range(samples):
+        distributions @= transition_matrix_power
+        distances = np.array([total_variational_distance(distributions[i], pi_T) for i in tbrw.T.nodes])
+        d = np.max(distances)
+        distributions @= transition_matrix
+        distances = np.array([total_variational_distance(distributions[i], pi_T) for i in tbrw.T.nodes])
+        alphas[i] = np.max(distances) / d
+        Cs[i] = d / alphas[i]**(i*samples)
+
+    alpha = np.mean(alphas)
+    C = np.min(Cs)
+    print(alphas)
+    print(Cs)
+    return alpha, C
+
+
+def mixing_time_comparison(gamma = 1/2, tree_size = 100, steps = 10000):
+    max_distances = []
+    tbrw = GammaTBRW(gamma)
+    tbrw.update_to_size(tree_size, True)
+    pi_T = stationary_distribution(tbrw.T)
+    transition_matrix = tbrw.transition_matrix()
+    distributions = np.identity(tree_size)
+
+    for i in range(steps):
+        print(f"Simulating step {i} of the random walk       ", end="\r")
+        distributions @= transition_matrix
+        distances = np.array([total_variational_distance(distributions[i], pi_T) for i in tbrw.T.nodes])
+        max_distances.append(np.max(distances))
+    
+    alpha = mixing_constants(tbrw)[0]
+    max_distances = np.array(max_distances)
+
+    log_bound = np.log(max_distances) / np.log(alpha)
+    diameter_bound = (2 * nx.diameter(tbrw.T) + 1) * tbrw.T.number_of_edges() * np.log(2*tbrw.T.number_of_edges() / max_distances)
+    
+    
+    plt.subplot(121)
+    plt.plot(max_distances[:2000], np.arange(steps)[:2000], label="Mixing time")
+    plt.plot(max_distances[:2000], log_bound[:2000], label="$\\log\\varepsilon/\\log\\alpha$")
+    # plt.plot(max_distances, diameter_bound, label="Bound from Corollary 2.5")
+    plt.gca().invert_xaxis()
+    plt.xlabel("$\\varepsilon$")
+    plt.ylabel("$t_{mix}$")
+    plt.legend()
+    plt.grid()
+
+    plt.subplot(122)
+    plt.loglog(max_distances, np.arange(steps), label="Mixing time")
+    plt.loglog(max_distances, log_bound, label="$\\log\\varepsilon/\\log\\alpha$")
+    plt.loglog(max_distances, diameter_bound, label="Bound from Corollary 2.5")
+    plt.gca().invert_xaxis()
+    plt.xlabel("$\\varepsilon$")
+    plt.ylabel("$t_{mix}$")
+    plt.legend()
+    plt.grid()
+
+    plt.show()
+

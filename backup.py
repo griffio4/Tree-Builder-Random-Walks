@@ -1,3 +1,9 @@
+from randomgraphs import GammaTBRW
+import numpy as np
+import matplotlib.pyplot as plt
+import networkx as nx
+
+
 # unused functions
 
 def mixing_time_plot():
@@ -30,4 +36,20 @@ def mixing_time_plot():
     plt.legend()
     plt.xlabel("Vertices, sorted by degree")
     plt.ylabel("Proportion of walkers")
+    plt.show()
+
+def alpha_plot(gamma = 1/2, min_size = 50, max_size = 200, iterations=20):
+
+    total_alphas = np.zeros(max_size - min_size)
+    
+    for i in range(iterations):
+        alphas = np.zeros(max_size - min_size)
+        tbrw = GammaTBRW(gamma)
+        for j in range(min_size, max_size):
+            print(f"Iteration {i}, size {j}        ", end="\r")
+            tbrw.update_to_size(j)
+            alphas[j - min_size] = mixing_constants(tbrw)[0]
+        plt.plot(np.arange(min_size, max_size), alphas, color=(0.5,0.5,1.0,0.2))
+        total_alphas += alphas
+    plt.plot(np.arange(min_size, max_size), total_alphas / iterations, color="red")
     plt.show()

@@ -99,7 +99,7 @@ class TBRW(RandomTree):
         
     
     def transition_matrix(self) -> np.array:
-        return np.array([self.transition_vector(x) for x in range(self.T.number_of_nodes())])
+        return np.array([self.transition_vector(x) for x in range(self.T.number_of_nodes())], dtype=np.float128)
     
     def update(self):
         self.update_tree()
