@@ -1,22 +1,11 @@
-from randomgraphs import TBRW, GammaTBRW
+from randomgraphs import *
 import numpy as np
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import networkx as nx
 from matplotlib import cm, colors
-import scipy.sparse as sp
 
 
-def degrees(G: nx.Graph) -> np.array:
-    deg = np.array([G.degree(v) for v in G.nodes])
-    deg[0] += 1 # self-loop
-    return deg
 
-def stationary_distribution(G: nx.Graph) -> np.array:
-    return degrees(G) / np.sum(degrees(G))
-
-def total_variational_distance(d1: np.array, d2: np.array):
-    return np.sum(np.abs(d1 - d2)) / 2
 
 
 def mixing_visualization(gamma = 1/2, tree_size = 500, step_counts = [10, 100, 500, 2000]):

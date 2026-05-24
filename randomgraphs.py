@@ -136,7 +136,7 @@ class BA(RandomTree):
     n: int
 
     def update(self):
-        print(f"Simulating n={self.n}", end="\r")
+        # print(f"Simulating n={self.n}", end="\r")
 
         # sample random vertex proportional to degree
         v = _sample_discrete(self.degree_distribution())
@@ -146,3 +146,13 @@ class BA(RandomTree):
         self.T.add_node(new_node)
         self.T.add_edge(v, new_node)
 
+def degrees(G: nx.Graph) -> np.array:
+    deg = np.array([G.degree(v) for v in G.nodes])
+    deg[0] += 1 # self-loop
+    return deg
+
+def stationary_distribution(G: nx.Graph) -> np.array:
+    return degrees(G) / np.sum(degrees(G))
+
+def total_variational_distance(d1: np.array, d2: np.array):
+    return np.sum(np.abs(d1 - d2)) / 2
