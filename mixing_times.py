@@ -100,8 +100,6 @@ def mixing_constants(tbrw: TBRW, steps = 1000, samples = 5):
 
     alpha = np.mean(alphas)
     C = np.min(Cs)
-    print(alphas)
-    print(Cs)
     return alpha, C
 
 
@@ -148,3 +146,20 @@ def mixing_time_comparison(gamma = 1/2, tree_size = 100, steps = 10000):
 
     plt.show()
 
+
+def tbrw_alphas():
+    iterations = 100
+    for gamma in [1/6, 1/3, 1/2, 2/3]:
+        means = []
+        for size in [100, 200, 300, 400, 500]:
+            alphas = np.zeros(iterations)
+            for i in range(iterations):
+                print(f"Iteration {i}", end="\r")
+                tbrw = GammaTBRW(gamma)
+                tbrw.update_to_size(size)
+                alphas[i] = mixing_constants(tbrw)[0]
+            means.append(np.mean(alphas))
+            print(f"gamma={round(gamma, 2)}, size={size}, alpha_mean={np.mean(alphas)}, alpha_var={np.var(alphas)}\nalphas={alphas}                       ")
+        print(f"Mean alpha values for gamma={round(gamma, 2)}: \n{np.array(means)}")
+
+tbrw_alphas()
