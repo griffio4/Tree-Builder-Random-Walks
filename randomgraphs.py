@@ -97,9 +97,8 @@ class TBRW(RandomTree):
             return vec / (self.T.degree(x) + 1)
         return vec / self.T.degree(x)
         
-    
     def transition_matrix(self) -> np.array:
-        return np.array([self.transition_vector(x) for x in range(self.T.number_of_nodes())], dtype=np.float128)
+        return np.array([self.transition_vector(x) for x in range(self.T.number_of_nodes())], dtype=np.float64)
     
     def update(self):
         self.update_tree()
@@ -124,20 +123,50 @@ class GammaTBRW(TBRW):
         self.n = 1
         self.gamma = gamma
     
-    # fast tree update function
+    # faster tree update function
     def update_tree(self):
         if random() < self.n**(-self.gamma):
             new_node = self.T.number_of_nodes()
             self.T.add_node(new_node)
             self.T.add_edge(self.X, new_node)
+    
+    # fast approximate growth using matrix multiplication, see Section 2.7
+    def fast_growth(self):
+        P = self.transition_matrix()
+
+        # inverse CDF as in Section 2.7
+        def inverse_cdf(x, gamma, tau_n):
+            if gamma <= 0 or gamma > 1:
+                raise Exception(f"{gamma} is an invalid value of gamma.")
+            if gamma == 1:
+                return tau_n * (1/(1-x)-1)
+            else:
+                return ((gamma-1)*np.log(1-x) + tau_n**(1-gamma))**(1/(1-gamma)) - tau_n
+        
+        # determine distribution of X after growth time
+        x = random()
+        growth_time = inverse_cdf(x, self.gamma, self.n)
+        if growth_time < 0:
+            raise Exception(f"Growth time {growth_time} is negative. Values: x={x}, gamma={self.gamma}, tau_n={self.n}")
+        growth_time = round(growth_time)
+        dist = np.zeros(self.T.number_of_nodes())
+        dist[self.X] = 1
+        dist @= np.linalg.matrix_power(P, growth_time)
+
+        # sample X from distribution
+        self.X = _sample_discrete(dist)
+
+        # attach leaf
+        new_node = self.T.number_of_nodes()
+        self.T.add_node(new_node)
+        self.T.add_edge(self.X, new_node)
+
 
 class BA(RandomTree):
     T: nx.Graph
     n: int
 
     def update(self):
-        # print(f"Simulating n={self.n}", end="\r")
-
         # sample random vertex proportional to degree
         v = _sample_discrete(self.degree_distribution())
 
