@@ -48,47 +48,79 @@ def ba_convergence_plot(iterations = 50, max_steps = 3000):
 
     plt.show()
 
-def tbrw_convergence_plot(iterations = 50, max_steps = 500):
-    gammas = [.5, .75, 1]
-    for i, gamma in enumerate(gammas):
+def tbrw_convergence_plot(iterations = 50, max_steps = 3000, gamma=1/2):
+    distances_sum = np.zeros(max_steps)
+    for i in range(iterations):
+        distances = np.zeros(max_steps)
+        tbrw = GammaTBRW(gamma)
+        for j in range(max_steps):
+            print(f"Iteration {i}, step {j}          ", end="\r")
+            deg = degrees(tbrw.T)
+            degree_counts = np.zeros(max_steps)
+            for d in deg:
+                degree_counts[d-1] += 1
+            distances[j] = total_variational_distance(degree_counts / np.sum(degree_counts), power_law_ba(max_steps))
+            tbrw.update_to_size(tbrw.T.number_of_nodes() + 1)
+        distances_sum += distances
+        if i == 0:
+            plt.subplot(121)
+            plt.plot(np.arange(max_steps), distances, color=(0.5,0.5,1.0,0.1), label="Simulations")
+            plt.subplot(122)
+            plt.loglog(np.arange(max_steps), distances, color=(0.5,0.5,1.0,0.1), label="Simulations")
+        else:
+            plt.subplot(121)
+            plt.plot(np.arange(max_steps), distances, color=(0.5,0.5,1.0,0.1))
+            plt.subplot(122)
+            plt.loglog(np.arange(max_steps), distances, color=(0.5,0.5,1.0,0.1))
+
+    plt.subplot(121)
+    plt.plot(np.arange(max_steps), distances_sum / iterations, color="red", label="Mean of simulations")
+    plt.xlabel("Tree size")
+    plt.ylabel("Distance from power-law")
+    plt.legend()
+    plt.grid()
+
+    plt.subplot(122)
+    plt.loglog(np.arange(max_steps), distances_sum / iterations, color="red", label="Mean of simulations")
+    plt.xlabel("Tree size")
+    plt.ylabel("Distance from power-law")
+    plt.legend()
+    plt.grid()
+
+    plt.show()
+
+def tbrw_convergence_small_gamma(iterations = 50, max_steps = 3000, gammas=[0, .1, .2, .3, .4, .5]):
+    for gamma in gammas:
         distances_sum = np.zeros(max_steps)
-        for j in range(iterations):
+        for i in range(iterations):
             distances = np.zeros(max_steps)
             tbrw = GammaTBRW(gamma)
-            for k in range(max_steps):
-                print(f"Gamma={round(gamma, 2)}, iteration {j}, step {k}          ", end="\r")
+            for j in range(max_steps):
+                print(f"gamma={gamma}, iteration {i}, step {j}          ", end="\r")
                 deg = degrees(tbrw.T)
                 degree_counts = np.zeros(max_steps)
                 for d in deg:
                     degree_counts[d-1] += 1
-                distances[k] = total_variational_distance(degree_counts / np.sum(degree_counts), power_law_ba(max_steps))
-                tbrw.fast_growth() # technically fast_growth is not faster for gamma<.75, but we do this for all gammas for consistency
+                distances[j] = total_variational_distance(degree_counts / np.sum(degree_counts), power_law_ba(max_steps))
+                tbrw.update_to_size(tbrw.T.number_of_nodes() + 1)
             distances_sum += distances
-            if j == 0:
-                plt.subplot(2, len(gammas), i+1)
-                plt.plot(np.arange(max_steps), distances, color=(0.5,0.5,1.0,0.1), label="Simulations")
-                plt.subplot(2, len(gammas), i+1+len(gammas))
-                plt.loglog(np.arange(max_steps), distances, color=(0.5,0.5,1.0,0.1), label="Simulations")
-            else:
-                plt.subplot(2, len(gammas), i+1)
-                plt.plot(np.arange(max_steps), distances, color=(0.5,0.5,1.0,0.1))
-                plt.subplot(2, len(gammas), i+1+len(gammas))
-                plt.loglog(np.arange(max_steps), distances, color=(0.5,0.5,1.0,0.1))
 
-        plt.subplot(2, len(gammas), i+1)
-        plt.plot(np.arange(max_steps), distances_sum / iterations, color="red", label="Mean of simulations")
-        plt.xlabel("Number of steps")
+        plt.subplot(121)
+        plt.plot(np.arange(max_steps), distances_sum / iterations, label=f"$\\gamma={round(gamma, 2)}$")
+        plt.xlabel("Tree size")
         plt.ylabel("Distance from power-law")
-        plt.title(f"$\\gamma={round(gamma, 2)}$, linear")
         plt.legend()
-        plt.grid()
 
-        plt.subplot(2, len(gammas), i+1+len(gammas))
-        plt.loglog(np.arange(max_steps), distances_sum / iterations, color="red", label="Mean of simulations")
-        plt.xlabel("Number of steps")
+        plt.subplot(122)
+        plt.loglog(np.arange(max_steps), distances_sum / iterations, label=f"$\\gamma={round(gamma, 2)}$")
+        plt.xlabel("Tree size")
         plt.ylabel("Distance from power-law")
-        plt.title(f"$\\gamma={round(gamma, 2)}$, loglog")
         plt.legend()
-        plt.grid()
-
+    
+    plt.subplot(121)
+    plt.grid()
+    plt.subplot(122)
+    plt.grid()
     plt.show()
+
+tbrw_convergence_small_gamma()

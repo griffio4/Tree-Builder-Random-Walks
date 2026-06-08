@@ -21,4 +21,3 @@ mixing_times.mixing_constants()
 
 # Degree distribution convergence rate plots
 degree_distribution.ba_convergence_plot()
-degree_distribution.tbrw_convergence_plot()
