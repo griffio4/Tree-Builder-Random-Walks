@@ -1,6 +1,7 @@
 import growth_times
 import mixing_times
 import degree_distribution
+import animations
 
 # Collection of functions used to generate plots, tables and diagrams in the paper
 
@@ -21,3 +22,9 @@ mixing_times.mixing_constants()
 
 # Degree distribution convergence rate plots
 degree_distribution.ba_convergence_plot()
+degree_distribution.tbrw_convergence_plot()
+degree_distribution.tbrw_convergence_small_gamma()
+degree_distribution.tbrw_convergence_small_gamma(iterations=50, max_steps=100, growths_per_step=500, gammas=[0, .05, .1, .15, .2, .25, .3])
+
+# animation used in presentation
+animations.growth_animation()

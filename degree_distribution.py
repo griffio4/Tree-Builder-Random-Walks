@@ -89,7 +89,7 @@ def tbrw_convergence_plot(iterations = 50, max_steps = 3000, gamma=1/2):
 
     plt.show()
 
-def tbrw_convergence_small_gamma(iterations = 50, max_steps = 3000, gammas=[0, .1, .2, .3, .4, .5]):
+def tbrw_convergence_small_gamma(iterations = 50, max_steps = 1000, gammas=[.0, .1, .2, .3, .4, .5], growths_per_step=10):
     for gamma in gammas:
         distances_sum = np.zeros(max_steps)
         for i in range(iterations):
@@ -98,21 +98,21 @@ def tbrw_convergence_small_gamma(iterations = 50, max_steps = 3000, gammas=[0, .
             for j in range(max_steps):
                 print(f"gamma={gamma}, iteration {i}, step {j}          ", end="\r")
                 deg = degrees(tbrw.T)
-                degree_counts = np.zeros(max_steps)
+                degree_counts = np.zeros(max_steps * growths_per_step)
                 for d in deg:
                     degree_counts[d-1] += 1
-                distances[j] = total_variational_distance(degree_counts / np.sum(degree_counts), power_law_ba(max_steps))
-                tbrw.update_to_size(tbrw.T.number_of_nodes() + 1)
+                distances[j] = total_variational_distance(degree_counts / np.sum(degree_counts), power_law_ba(max_steps * growths_per_step))
+                tbrw.update_to_size(tbrw.T.number_of_nodes() + growths_per_step)
             distances_sum += distances
 
         plt.subplot(121)
-        plt.plot(np.arange(max_steps), distances_sum / iterations, label=f"$\\gamma={round(gamma, 2)}$")
+        plt.plot(np.arange(max_steps) * growths_per_step, distances_sum / iterations, label=f"$\\gamma={round(gamma, 2)}$")
         plt.xlabel("Tree size")
         plt.ylabel("Distance from power-law")
         plt.legend()
 
         plt.subplot(122)
-        plt.loglog(np.arange(max_steps), distances_sum / iterations, label=f"$\\gamma={round(gamma, 2)}$")
+        plt.loglog(np.arange(max_steps) * growths_per_step, distances_sum / iterations, label=f"$\\gamma={round(gamma, 2)}$")
         plt.xlabel("Tree size")
         plt.ylabel("Distance from power-law")
         plt.legend()
@@ -123,4 +123,3 @@ def tbrw_convergence_small_gamma(iterations = 50, max_steps = 3000, gammas=[0, .
     plt.grid()
     plt.show()
 
-tbrw_convergence_small_gamma()

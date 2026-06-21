@@ -162,4 +162,3 @@ def tbrw_alphas():
             print(f"gamma={round(gamma, 2)}, size={size}, alpha_mean={np.mean(alphas)}, alpha_var={np.var(alphas)}\nalphas={alphas}                       ")
         print(f"Mean alpha values for gamma={round(gamma, 2)}: \n{np.array(means)}")
 
-tbrw_alphas()
