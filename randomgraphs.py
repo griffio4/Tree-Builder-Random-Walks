@@ -64,14 +64,17 @@ class TBRW(RandomTree):
     X: int
     n: int
     leaf_pmf: Callable
+    selfloop: bool
     
     def __init__(self, leaf_pmf: Callable, T0: nx.Graph = nx.path_graph(2), X0: int = 0):
+        # leaf_pmf is a function taking a parameter n (int) and returning a probability distribution (np.array)
         if X0 not in T0.nodes:
             raise Exception(f"{X0} is not a vertex of the initial tree.")
         self.leaf_pmf = leaf_pmf
         self.T = T0.copy()
         self.X = X0
         self.n = 0
+        self.selfloop = True
     
     def update_tree(self):
         # sample leaf count
@@ -92,7 +95,7 @@ class TBRW(RandomTree):
         vec = np.zeros(self.T.number_of_nodes())
         for n in self.T.neighbors(x):
             vec[n] = 1
-        if x == 0: # self-loop
+        if x == 0 and self.selfloop: # self-loop
             vec[0] = 1
             return vec / (self.T.degree(x) + 1)
         return vec / self.T.degree(x)

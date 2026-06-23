@@ -3,7 +3,8 @@ import mixing_times
 import degree_distribution
 import animations
 
-# Collection of functions used to generate plots, tables and diagrams in the paper
+# Collection of simulation functions used to generate plots, tables and diagrams in the paper. 
+# Most of these functions take a long time to run (some up to 2 hours)
 
 # Growth time plots
 growth_times.plot_growth_times()
@@ -27,4 +28,6 @@ degree_distribution.tbrw_convergence_small_gamma()
 degree_distribution.tbrw_convergence_small_gamma(iterations=50, max_steps=100, growths_per_step=500, gammas=[0, .05, .1, .15, .2, .25, .3])
 
 # animation used in presentation
-animations.growth_animation()
+animations.growth_animation(gamma=.2)
+animations.growth_animation(gamma=.5)
+animations.walk_animation()

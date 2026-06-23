@@ -149,3 +149,19 @@ def tbrw_compare_methods(iterations = 100, max_steps = 500, gamma = 1/2):
 
     plt.subplots_adjust(wspace=.3)
     plt.show()
+
+
+
+def node_colors(count: int):
+    color1 = (.4, .8, .8)
+    color2 = (.8, .0, .0)
+    tail = 10
+
+    def mix(color1, color2, t):
+        return (t * color1[0] + (1-t) * color2[0], t * color1[1] + (1-t) * color2[1], t * color1[2] + (1-t) * color2[2])
+    
+    c1 = {str(i) : color1 for i in range(max(0, count - tail))}
+    c2 = {str(i + max(0, count - tail)) : mix(color1, color2, i / (tail-1)) for i in range(min(count, tail))}
+    colors = dict(tuple(c1.items()) + tuple(c2.items()))
+    print(colors)
+    return colors
